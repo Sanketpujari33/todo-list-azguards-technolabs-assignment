@@ -2,14 +2,19 @@
   "name": "todo-list-backend",
   "version": "1.0.0",
   "description": "Develop a backend application using Node.js and Express.js to manage a todo list. Users should be able to perform CRUD operations on todo items, upload todo items from a CSV file, download the todo list in CSV format, and set a status flag for each todo item.",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "client": "npm start --prefix ./frontend ",
+    "app": "concurrently \"npm start\" \"npm run client\"",
+    "build": "NPM_CONFIG_PRODUCTION=false npm install --prefix frontend && npm run build --prefix frontend"
   },
   "author": "Sanket Pujari",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mongoose": "^8.3.4"
   }
