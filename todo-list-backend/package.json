@@ -1,6 +1,9 @@
 {
   "name": "todo-list-backend",
   "version": "1.0.0",
+  "engines": {
+    "node": "19.x"
+  },
   "description": "Develop a backend application using Node.js and Express.js to manage a todo list. Users should be able to perform CRUD operations on todo items, upload todo items from a CSV file, download the todo list in CSV format, and set a status flag for each todo item.",
   "main": "server.js",
   "scripts": {
@@ -13,9 +16,21 @@
   "author": "Sanket Pujari",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
+    "cron": "^3.1.7",
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "mongoose": "^8.3.4"
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.4",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "path": "^0.12.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "validator": "^13.12.0"
   }
 }
