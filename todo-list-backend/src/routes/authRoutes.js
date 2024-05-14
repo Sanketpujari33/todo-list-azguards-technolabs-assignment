@@ -128,7 +128,7 @@ router.post('/login', userController.login);
 // User logout route
 /**
  * @swagger
- * /logout:
+ * /auth/logout:
  *   get:
  *     summary: User logout
  *     description: Logs out the user by clearing the session token cookie.
