@@ -32,16 +32,30 @@ async function createTodo(req, res) {
         if (!ownerId) {
             return res.status(400).json({ success: false, message: 'owner Not found' });
         }
+        // Validate required fields
+        if (!description || !status) {
+            return res.status(400).json({ success: false, message: 'Description and status are required' });
+        }
+        // Validate status value
+        const allowedStatus = ['pending', 'completed'];
+        if (!allowedStatus.includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status value' });
+        }
+        // Create new todo
         const todo = new Todo({
             description,
             status,
             owner: ownerId
         });
 
+        // Save new todo to database
         const newTodo = await todo.save();
-        res.status(201).json(newTodo);
+
+        // Respond with the newly created todo
+        res.status(201).json({ success: true, data: newTodo });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message });
     }
 }
 

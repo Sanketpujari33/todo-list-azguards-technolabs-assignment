@@ -121,39 +121,44 @@ router.get('/:id', todoController.getTodoById);
  *                 type: string
  *                 enum: [pending, completed]
  *     responses:
- *       '201':
+ *       201:
  *         description: Todo created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Todos'
- *       '400':
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Todos'
+ *       400:
  *         description: Bad request
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
  *                 message:
  *                   type: string
- *       '401':
- *         description: Unauthorized
+ *                   example: Description and status are required
+ *       500:
+ *         description: Server error
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
  *                 message:
  *                   type: string
- *       '500':
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *                   example: Internal server error
  */
 
 router.post('/:id', [verifyToken], todoController.createTodo);
