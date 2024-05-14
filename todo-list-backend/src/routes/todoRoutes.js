@@ -51,7 +51,7 @@ router.get('/', todoController.getAllTodos);
  *   get:
  *     summary: Get a todo by ID
  *     description: Retrieve a todo item from the database by its ID.
-  *     tags:
+ *     tags:
  *       - Todos
  *     parameters:
  *       - in: path
@@ -94,44 +94,41 @@ router.get('/', todoController.getAllTodos);
 router.get('/:id', todoController.getTodoById);
 /**
  * @swagger
- * /todos/{userId}:
+ * /todos/{id}:
  *   post:
- *     summary: Create a new todo for a user
- *     description: Creates a new todo item for the specified user.
+ *     summary: Create a new todo
  *     tags:
  *       - Todos
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: userId
+ *         name: id
+ *         required: true
+ *         description: User ID
  *         schema:
  *           type: string
- *         required: true
- *         description: The ID of the user for whom the todo is created.
- *       - in: body
- *         name: todo
- *         description: The todo object to be created.
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             description:
- *               type: string
- *               description: The description of the todo.
- *             status:
- *               type: string
- *               enum: [pending, completed]
- *               description: The status of the todo.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               description:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [pending, completed]
  *     responses:
  *       '201':
- *         description: Todo created successfully.
+ *         description: Todo created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Todo'
+ *               $ref: '#/components/schemas/Todos'
  *       '400':
- *         description: Bad request. The request body is missing required fields or contains invalid data.
+ *         description: Bad request
  *         content:
  *           application/json:
  *             schema:
@@ -139,9 +136,17 @@ router.get('/:id', todoController.getTodoById);
  *               properties:
  *                 message:
  *                   type: string
- *                   description: Error message describing the issue.
+ *       '401':
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  *       '500':
- *         description: Internal server error. Something went wrong on the server side.
+ *         description: Internal Server Error
  *         content:
  *           application/json:
  *             schema:
@@ -149,7 +154,6 @@ router.get('/:id', todoController.getTodoById);
  *               properties:
  *                 message:
  *                   type: string
- *                   description: Error message describing the issue.
  */
 
 router.post('/:id', [verifyToken], todoController.createTodo);

@@ -9,7 +9,6 @@ const User = require('../models/user');
 // Filtering options
 const filterTodoByStatus = async (req, res) => {
     try {
-
         let query = {};
         if (!req.query.status) {
             return res.status(400).json({ success: false, message: 'Status parameter is required' });
@@ -35,43 +34,80 @@ const filterTodoByStatus = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
-// CSV file upload and download
+
 const uploadTodoFromCSV = async (req, res) => {
     try {
         const todos = [];
-        const ownerId = req.params.id; // Assuming you have user information stored in req.user after authentication
+        const ownerId = req.params.id;
+
         if (!ownerId) {
             return res.status(400).json({ success: false, message: 'Owner not found' });
         }
+
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
+
+        console.log('File path:', req.file.path);
+
         fs.createReadStream(req.file.path)
             .pipe(csv())
             .on('data', (data) => {
-                // Validate if the required fields are present in the CSV data
-                if (!data.description) {
-                    return res.status(400).json({ success: false, message: 'Description is required' });
+                // Logging the data received from CSV
+                console.log('CSV Row:', data);
+
+                if (data.Description) {
+                    todos.push({
+                        description: data.description,
+                        status: data.status || 'pending',
+                        owner: ownerId
+                    });
+                    console.log('Todo added:', {
+                        description: data.description,
+                        status: data.status || 'pending',
+                        owner: ownerId
+                    });
+                } else {
+                    console.error('Row is missing description:', data);
                 }
-                // Push data to todos array
-                todos.push({ description: data.description, status: data.status, owner: ownerId });
             })
             .on('end', async () => {
-                // Insert todos into database
-                await Todo.insertMany(todos);
-                res.json({ message: 'Todos uploaded successfully' });
+                if (todos.length === 0) {
+                    return res.status(400).json({ message: 'No valid todos found in CSV' });
+                }
+
+                try {
+                    const insertedTodos = await Todo.insertMany(todos);
+                    res.json({ message: 'Todos uploaded successfully', todos: insertedTodos });
+                } catch (dbError) {
+                    console.error('Database insertion error:', dbError);
+                    res.status(500).json({ message: 'Error inserting todos into database' });
+                }
+            })
+            .on('error', (error) => {
+                console.error('CSV parsing error:', error);
+                res.status(400).json({ message: 'CSV parsing error' });
             });
     } catch (error) {
+        console.error('Unexpected error:', error);
         res.status(500).json({ message: error.message });
     }
 };
 
-
 const downloadTodoListCSV = async (req, res) => {
-
     try {
-        // Fetch all todos from the database
-        const todos = await Todo.find();
+        const ownerId = req.params.id; // Assuming the owner's ID is passed as a URL parameter
+
+        if (!ownerId) {
+            return res.status(400).json({ message: 'Owner ID not provided' });
+        }
+
+        // Fetch todos for the specified owner from the database
+        const todos = await Todo.find({ owner: ownerId });
+
+        if (todos.length === 0) {
+            return res.status(404).json({ message: 'No todos found for the specified owner' });
+        }
 
         // Define the file path for the CSV file
         const filePath = path.join(__dirname, '../uploads/todos.csv');
@@ -90,7 +126,19 @@ const downloadTodoListCSV = async (req, res) => {
         await csvWriter.writeRecords(todos);
 
         // Send the CSV file as a download to the client
-        res.download(filePath, 'todos.csv');
+        res.download(filePath, 'todos.csv', (err) => {
+            if (err) {
+                console.error("Error sending file:", err);
+                res.status(500).json({ message: "Failed to download todo list CSV" });
+            } else {
+                // Optionally delete the file after download
+                fs.unlink(filePath, (unlinkErr) => {
+                    if (unlinkErr) {
+                        console.error("Error deleting file:", unlinkErr);
+                    }
+                });
+            }
+        });
     } catch (error) {
         console.error("Error downloading todo list CSV:", error);
         res.status(500).json({ message: "Failed to download todo list CSV" });

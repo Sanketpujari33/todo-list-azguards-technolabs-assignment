@@ -39,42 +39,62 @@ router.get('/filter', csvController.filterTodoByStatus);
 // the below code fragment can be found in:
 /**
  * @swagger
- * /todo/download:
+ * /todo/download/{id}:
  *   get:
- *     summary: Download todo list in CSV format
+ *     summary: Download todo list as CSV
+ *     description: Download a CSV file containing the todo list for the specified owner.
  *     tags:
  *       - CSV
- *     description: |
- *       Allows users to download the todo list in CSV format. The todo list will be downloaded as a CSV file.
- *       Each row in the CSV file represents a todo item, with columns for description and status.
- *       The CSV file can be opened and viewed using spreadsheet software such as Microsoft Excel or Google Sheets.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the owner
  *     responses:
- *       '200':
- *         description: Todo list downloaded successfully.
+ *       200:
+ *         description: CSV file containing the todos
  *         content:
- *           application/octet-stream:
+ *           text/csv:
  *             schema:
  *               type: string
  *               format: binary
- *       '500':
- *         description: An error occurred while downloading the todo list.
+ *       400:
+ *         description: Owner ID not provided
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
- * components:
- *   schemas:
- *     Error:
- *       type: object
- *       properties:
- *         message:
- *           type: string
- *           description: A message describing the error.
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Owner ID not provided
+ *       404:
+ *         description: No todos found for the specified owner
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: No todos found for the specified owner
+ *       500:
+ *         description: Failed to download todo list CSV
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Failed to download todo list CSV
  */
 
-router.get('/download', [verifyToken], csvController.downloadTodoListCSV);
+router.get('/download/:id', [verifyToken], csvController.downloadTodoListCSV);
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -93,17 +113,20 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 /**
  * @swagger
- * /todo/upload:
+ * /todo/upload/{id}:
  *   post:
- *     summary: Upload todo items from CSV file
+ *     summary: Upload CSV file to create todos
  *     tags:
  *       - CSV
- *     description: |
- *       Allows users to upload todo items from a CSV file. The CSV file should contain columns for description and status.
- *       Each row in the CSV file represents a todo item to be uploaded.
- *       After successful upload, the todo items will be saved in the database.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -116,7 +139,7 @@ const upload = multer({ storage: storage });
  *                 format: binary
  *     responses:
  *       '200':
- *         description: Todos uploaded successfully.
+ *         description: Todos uploaded successfully
  *         content:
  *           application/json:
  *             schema:
@@ -124,32 +147,33 @@ const upload = multer({ storage: storage });
  *               properties:
  *                 message:
  *                   type: string
- *                   description: A message confirming successful upload.
  *       '400':
- *         description: Bad request. No file uploaded.
+ *         description: Bad request
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       '401':
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  *       '500':
- *         description: An error occurred while processing the upload.
+ *         description: Internal Server Error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
- * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
- *   schemas:
- *     Error:
- *       type: object
- *       properties:
- *         message:
- *           type: string
- *           description: A message describing the error.
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  */
 
 router.post('/upload/:id', [verifyToken], upload.single('file'), csvController.uploadTodoFromCSV);
