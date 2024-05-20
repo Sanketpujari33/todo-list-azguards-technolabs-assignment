@@ -96,17 +96,26 @@ const uploadTodoFromCSV = async (req, res) => {
 
 const downloadTodoListCSV = async (req, res) => {
     try {
-        const ownerId = req.params.id; // Assuming the owner's ID is passed as a URL parameter
+        const ownerId = req.params.id;
         if (!ownerId) {
             return res.status(400).json({ message: 'Owner ID not provided' });
         }
+
         // Fetch todos for the specified owner from the database
         const todos = await Todo.find({ owner: ownerId });
         if (todos.length === 0) {
             return res.status(404).json({ message: 'No todos found for the specified owner' });
         }
+
+        // Define the uploads directory and ensure it exists
+        const uploadsDir = path.join(__dirname, 'uploads');
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+
         // Define the file path for the CSV file
-        const filePath = path.join(__dirname, '../uploads/todos.csv');
+        const filePath = path.join(uploadsDir, 'todos.csv');
+
         // Create CSV writer
         const csvWriter = createCsvWriter({
             path: filePath,
