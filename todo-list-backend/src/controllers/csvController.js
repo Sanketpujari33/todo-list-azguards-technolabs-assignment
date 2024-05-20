@@ -58,13 +58,13 @@ const uploadTodoFromCSV = async (req, res) => {
 
                 if (data.Description) {
                     todos.push({
-                        description: data.description,
-                        status: data.status || 'pending',
+                        description: data.Description,
+                        status: data.Status || 'pending',
                         owner: ownerId
                     });
                     console.log('Todo added:', {
-                        description: data.description,
-                        status: data.status || 'pending',
+                        description: data.Description,
+                        status: data.Status || 'pending',
                         owner: ownerId
                     });
                 } else {
